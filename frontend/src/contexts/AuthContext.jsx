@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Set axios base URL from environment variable
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
+axios.defaults.baseURL = API_URL;
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
