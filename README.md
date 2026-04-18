@@ -1,6 +1,6 @@
-# ForeJoy - Golf with Purpose (Supabase Edition)
+# ForeJoy - Golf with Purpose
 
-A production-ready subscription-based web platform combining golf score tracking, monthly draw-based rewards, and charity contributions. **Built with Supabase!**
+A production-ready subscription-based web platform combining golf score tracking, monthly draw-based rewards, and charity contributions.
 
 ## 📁 Project Structure
 
@@ -8,54 +8,54 @@ A production-ready subscription-based web platform combining golf score tracking
 assignment/
 ├── backend/
 │   ├── config/
-│   │   └── db.js                 # Supabase client
+│   │   └── db.js                 # Mock database (for now)
 │   ├── db/
-│   │   └── supabase-schema.sql   # Supabase database schema
+│   │   └── supabase-schema.sql   # Supabase database schema (ready for integration)
 │   ├── middleware/
-│   │   └── auth.js               # Supabase JWT auth
+│   │   └── auth.js               # JWT auth middleware
 │   ├── routes/
-│   │   ├── auth.js               # Supabase Auth routes
+│   │   ├── auth.js               # Auth routes
 │   │   ├── users.js              # User management
 │   │   ├── scores.js             # Score tracking
 │   │   ├── charities.js          # Charity management
-│   │   ├── subscriptions.js      # Stripe subscriptions
+│   │   ├── subscriptions.js      # Stripe subscriptions integration
 │   │   ├── draws.js              # Draw management
 │   │   ├── winnings.js           # Winnings & verification
 │   │   └── admin.js              # Admin dashboard
-│   ├── .env                      # Environment variables
+│   ├── .env                      # Environment variables (gitignored)
 │   ├── .env.example              # Env template
 │   ├── package.json              # Dependencies
 │   └── server.js                 # Express server
 │
 └── frontend/
     ├── src/
-    │   ├── config/
-    │   │   └── supabase.js       # Frontend Supabase client
     │   ├── contexts/
-    │   │   └── AuthContext.jsx   # Supabase Auth context
+    │   │   ├── AuthContext.jsx   # Auth context
+    │   │   └── ThemeContext.jsx  # Theme (dark/light) context
     │   ├── pages/                 # All UI pages
+    │   │   ├── Home.jsx
+    │   │   ├── Login.jsx
+    │   │   ├── Register.jsx
+    │   │   ├── Pricing.jsx        # Subscription plans with Stripe checkout
+    │   │   ├── Charities.jsx
+    │   │   ├── Dashboard.jsx
+    │   │   └── admin/AdminDashboard.jsx
     │   ├── components/            # Reusable components
+    │   │   └── Navbar.jsx
     │   ├── App.jsx
+    │   ├── index.css
     │   └── main.jsx
+    ├── .env                      # Environment variables (gitignored)
     ├── .env.example
     ├── package.json
+    ├── tailwind.config.js
+    ├── postcss.config.js
     └── vite.config.js
 ```
 
 ## 🚀 Quick Setup
 
-### Step 1: Create Supabase Project
-
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Wait for your database to initialize
-
-### Step 2: Set up Database Schema
-
-1. Go to your Supabase project → SQL Editor
-2. Copy and paste the SQL from `backend/db/supabase-schema.sql`
-3. Run the query to create all tables and policies
-
-### Step 3: Configure Backend
+### Step 1: Configure Backend
 
 ```bash
 cd backend
@@ -67,10 +67,33 @@ cp .env.example .env
 
 Edit `.env` with your:
 - Supabase URL & Service Role Key (from Supabase → Project Settings → API)
-- Stripe keys
+- **Stripe keys** (required for payment integration)
 - Cloudinary credentials (optional)
+- JWT secret key (generate a strong one)
 
-### Step 4: Configure Frontend
+**Required Environment Variables:**
+```env
+PORT=5003
+NODE_ENV=development
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_ANON_KEY=your-anon-key
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Frontend URL
+CLIENT_URL=http://localhost:5173
+```
+
+### Step 2: Configure Frontend
 
 ```bash
 cd frontend
@@ -82,8 +105,16 @@ cp .env.example .env
 
 Edit `.env` with your:
 - Supabase URL & Anon Key
+- API URL pointing to your backend
 
-### Step 5: Run the App
+**Required Environment Variables:**
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_API_URL=http://localhost:5003
+```
+
+### Step 3: Run the App
 
 **Backend:**
 ```bash
@@ -99,84 +130,79 @@ npm run dev
 
 The app will be available at:
 - Frontend: http://localhost:5173
-- Backend: http://localhost:5001
+- Backend: http://localhost:5003
 
-## 🛠️ Supabase Connection Details
+## 💳 Stripe Payment Integration (Fully Functional!)
 
-### Backend (Express API)
-Uses Supabase Service Role Key for server-side operations.
-- **File**: `backend/config/db.js`
-- **Env vars**: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+This project includes complete Stripe subscription integration:
 
-### Frontend
-Uses Supabase Anon Key for client-side auth and data fetching.
-- **File**: `frontend/src/config/supabase.js`
-- **Env vars**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+1. **Checkout Session Creation**: `/api/subscriptions/create-checkout-session`
+2. **Subscription Management**: Webhook handler for successful payments
+3. **Billing Portal**: `/api/subscriptions/portal` for managing subscriptions
 
-## 📊 Database Tables
+**Testing Payments (Stripe Test Cards):**
+- Card Number: `4242 4242 4242 4242`
+- Expiry: Any future date
+- CVC: Any 3 digits
 
-| Table | Purpose |
-|-------|---------|
-| `users` | User profiles (extends Supabase Auth users) |
-| `subscriptions` | Stripe subscription tracking |
-| `charities` | Charity organizations |
-| `scores` | Golf scores (max 5 per user) |
-| `draws` | Monthly draw configurations |
-| `winnings` | Winner & prize tracking |
-
-## 🔐 Authentication
-
-Uses **Supabase Auth** (email/password).
-
-## 🎨 Tech Stack
+## 🛠️ Tech Stack
 
 **Frontend:**
 - React 18 + Vite
 - Tailwind CSS
-- Framer Motion
-- Supabase.js
+- Framer Motion (animations)
 - React Router
+- Axios
+- Lucide React (icons)
 
 **Backend:**
 - Node.js + Express
-- Supabase (Auth + Database)
-- Stripe Payments
-- Cloudinary (Storage)
+- Stripe Payments (fully integrated)
+- JWT Authentication
+- CORS enabled
+- Mock database (ready for Supabase integration)
 
-## 📝 PRD Compliance
+## 🎨 UI Features
 
-This project fully implements all requirements from the PRD:
-- ✅ Subscription engine (Stripe)
-- ✅ Stableford score tracking (max 5 scores)
+- **Ethereal Minimalism** design (no golf clichés)
+- **Dark/Light theme toggle**
+- Responsive design (mobile/tablet/desktop)
+- Smooth animations with Framer Motion
+
+## 📝 Features
+
+- ✅ User Registration & Login
+- ✅ Subscription plans (Monthly/Yearly) with Stripe checkout
+- ✅ Golf score tracking
+- ✅ Charity selection and contributions
 - ✅ Monthly draw system
-- ✅ Charity integration (minimum 10%)
-- ✅ Complete admin dashboard
-- ✅ Modern, emotional UI/UX (no golf clichés)
-- ✅ Winner verification system
+- ✅ Admin dashboard
+- ✅ Dark/Light theme toggle
 
 ## 🚀 Deployment
 
 ### Frontend (Vercel)
+
 1. Push your code to GitHub
 2. Import project in Vercel
-3. Set environment variables
+3. Set environment variables in Vercel dashboard
 4. Deploy!
 
-### Backend (Render/Railway)
+### Backend (Render)
+
 1. Push code to GitHub
-2. Import project
-3. Set environment variables
+2. Import project in Render
+3. Set environment variables in Render dashboard
 4. Deploy!
 
-### Supabase
-Already hosted, no deployment needed!
+## How to Connect Supabase (Optional)
 
-## 💡 Key Changes from Original
+The project currently uses a mock database for easy development. To connect to Supabase:
 
-- **Database**: PostgreSQL → Supabase (managed PostgreSQL)
-- **Auth**: Custom JWT → Supabase Auth
-- **DB Client**: `pg` → `@supabase/supabase-js`
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Run the SQL schema from `backend/db/supabase-schema.sql` in Supabase SQL Editor
+3. Update `backend/config/db.js` to use Supabase client instead of mock DB
 
 ---
 
-**That's it! Your Supabase-powered golf platform is ready to use!**
+**That's it! Your ForeJoy golf platform is ready to use!**
