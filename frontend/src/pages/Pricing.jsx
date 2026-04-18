@@ -2,18 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, CreditCard, Zap, Trophy, Heart } from 'lucide-react';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
 const Pricing = () => {
-  const { user } = useAuth();
+  const { user, api } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(null);
 
   const plans = [
     {
       name: 'Monthly',
-      price: 10,
+      price: 9.99,
       period: '/month',
       features: [
         'Track your last 5 scores',
@@ -27,7 +26,7 @@ const Pricing = () => {
     },
     {
       name: 'Yearly',
-      price: 99,
+      price: 99.99,
       period: '/year',
       features: [
         'Everything in Monthly',
@@ -49,7 +48,7 @@ const Pricing = () => {
 
     setLoading(planType);
     try {
-      const response = await axios.post('/api/subscriptions/create-checkout-session', { planType });
+      const response = await api.post('/api/subscriptions/create-checkout-session', { plan: planType });
       window.location.href = response.data.url;
     } catch (error) {
       console.error('Error creating checkout session:', error);
