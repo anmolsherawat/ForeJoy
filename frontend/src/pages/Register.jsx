@@ -28,7 +28,8 @@ const Register = () => {
 
   const fetchCharities = async () => {
     try {
-      const response = await axios.get('/api/charities');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
+      const response = await axios.get(`${API_URL}/api/charities`);
       setCharities(response.data);
     } catch (error) {
       console.error('Error fetching charities:', error);

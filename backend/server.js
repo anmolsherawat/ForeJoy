@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors({ origin: '*' }));
 
 // Stripe webhook needs raw body - apply before other body parsers
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
