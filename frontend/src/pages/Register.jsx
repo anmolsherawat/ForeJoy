@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, LogIn, Eye, EyeOff, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +18,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [charitiesLoading, setCharitiesLoading] = useState(true);
   const [error, setError] = useState('');
-  const { register } = useAuth();
+  const { register, api } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,8 +27,7 @@ const Register = () => {
 
   const fetchCharities = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
-      const response = await axios.get(`${API_URL}/api/charities`);
+      const response = await api.get('/api/charities');
       setCharities(response.data);
     } catch (error) {
       console.error('Error fetching charities:', error);

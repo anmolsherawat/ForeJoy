@@ -3,7 +3,13 @@ import axios from 'axios';
 
 // Set axios base URL from environment variable
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
-axios.defaults.baseURL = API_URL;
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 const AuthContext = createContext();
 
@@ -22,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser();
     } else {
       setLoading(false);
@@ -31,7 +37,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get('/api/users/profile');
+      const response = await api.get('/api/users/profile');
       setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -43,33 +49,37 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      console.log('Login attempt to:', `${API_URL}/api/auth/login`);
+      const response = await api.post('/api/auth/login', { email, password });
       const { token, user: userData } = response.data;
       localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(userData);
       return { success: true };
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, message: error.response?.data?.message || 'Login failed' };
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
+      console.log('Register attempt to:', `${API_URL}/api/auth/register`);
+      const response = await api.post('/api/auth/register', userData);
       const { token, user: newUser } = response.data;
       localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(newUser);
       return { success: true };
     } catch (error) {
+      console.error('Registration error:', error);
       return { success: false, message: error.response?.data?.message || 'Registration failed' };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
@@ -78,7 +88,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser, fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser, fetchUser, api }}>
       {children}
     </AuthContext.Provider>
   );
