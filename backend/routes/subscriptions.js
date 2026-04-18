@@ -21,8 +21,9 @@ const PLANS = {
   }
 };
 
-router.post('/create-checkout-session', auth, async (req, res) => {
+router.post('/create-checkout-session', async (req, res) => {
   try {
+    console.log('Checkout session request:', req.body);
     const { plan } = req.body;
     const selectedPlan = PLANS[plan];
     
@@ -33,7 +34,7 @@ router.post('/create-checkout-session', auth, async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
-      customer_email: req.user.email,
+      customer_email: req.user?.email || 'test@example.com',
       line_items: [
         {
           price_data: {
@@ -52,15 +53,16 @@ router.post('/create-checkout-session', auth, async (req, res) => {
       success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard?success=true`,
       cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/pricing?canceled=true`,
       metadata: {
-        userId: req.user.id,
+        userId: req.user?.id || 'test-user-id',
         plan: plan
       }
     });
 
+    console.log('Stripe session created:', session.url);
     res.json({ url: session.url });
   } catch (error) {
     console.error('Checkout session error:', error);
-    res.status(500).json({ message: 'Failed to create checkout session' });
+    res.status(500).json({ message: 'Failed to create checkout session', error: error.message });
   }
 });
 

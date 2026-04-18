@@ -48,10 +48,13 @@ const Pricing = () => {
 
     setLoading(planType);
     try {
+      console.log('Subscribing to plan:', planType);
       const response = await api.post('/api/subscriptions/create-checkout-session', { plan: planType });
+      console.log('Checkout response:', response.data);
       window.location.href = response.data.url;
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      alert(error.response?.data?.message || 'Failed to start checkout');
     } finally {
       setLoading(null);
     }
